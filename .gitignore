@@ -1,0 +1,14 @@
+.DS_Store
+.classpath
+.project
+.idea
+target/
+bin/
+*~
+*.iml
+*.pyc
+*.out
+lucene-index*
+run.*
+log*
+out.*
