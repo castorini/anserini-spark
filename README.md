@@ -32,6 +32,8 @@ It's an RDD... so you can now do whatever you want with it.
 PySpark interfaces with the JVM via the Py4J project, which plays much nicer with Java than Scala. Thus, the Scala classes used above have been re-written in (roughly) equivelant Java code.
 
 ```
+$ pyspark --jars target/anserini-spark-0.0.1-SNAPSHOT-fatjar.jar
+
 # Import Java -> Python converter
 from pyspark.mllib.common import _java2py
 
