@@ -12,6 +12,7 @@ import scala.reflect.ClassManifestFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.StreamSupport;
 
 public class JavaLuceneRDD extends JavaRDD<Integer> {
@@ -20,7 +21,7 @@ public class JavaLuceneRDD extends JavaRDD<Integer> {
     super(JavaRDD.toRDD(rdd), ClassManifestFactory.fromClass(Integer.class));
   }
 
-  public JavaRDD<HashMap<String, String>> getDocs(String path) {
+  public JavaRDD<Map<String, String>> getDocs(String path) {
 
     return wrapRDD(rdd()).mapPartitions((part) -> {
 
@@ -31,23 +32,16 @@ public class JavaLuceneRDD extends JavaRDD<Integer> {
       Iterable<Integer> iterable = () -> part;
 
       return StreamSupport.stream(iterable.spliterator(), false).map(doc -> {
-
-        HashMap<String, String> fields = new HashMap();
-
+        Map<String, String> fields = new HashMap();
         try {
-
           Document document = reader.document(doc);
-
           for (IndexableField field : document.getFields()) {
             fields.put(field.name(), field.stringValue());
           }
-
         } catch (IOException e) {
           e.printStackTrace();
         }
-
         return fields;
-
       }).iterator();
 
     });
