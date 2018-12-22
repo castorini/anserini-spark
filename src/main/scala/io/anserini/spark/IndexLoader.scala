@@ -1,27 +1,86 @@
 package io.anserini.spark
 
+import java.util.stream.{Collectors, IntStream}
+import java.util.{ArrayList, HashMap, Iterator}
+
 import io.anserini.hadoop.HdfsReadOnlyDirectory
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
+import org.apache.lucene.document.Document
 import org.apache.lucene.index.DirectoryReader
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
+import org.apache.spark.api.java.function.FlatMapFunction
+import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 
-class IndexLoader(sc: SparkContext, path: String) {
-  val conf = new Configuration()
-  val reader = DirectoryReader.open(new HdfsReadOnlyDirectory(conf, new Path(path)))
+import scala.collection.JavaConverters._
+import scala.reflect.ClassTag
 
-  def docids: RDD[Int] = {
-    val arr = (0 to numDocs() - 1).toArray
-    sc.parallelize(arr)
+object IndexLoader {
+
+  def docs[T: ClassTag](rdd: JavaRDD[Integer], path: String, extractor: Document => T): JavaRDD[T] = {
+    rdd.mapPartitions(new FlatMapFunction[Iterator[Integer], T] {
+      override def call(iter: Iterator[Integer]): Iterator[T] = {
+        val reader = DirectoryReader.open(new HdfsReadOnlyDirectory(new Configuration(), new Path(path)))
+        val list = new ArrayList[T]()
+        while (iter.hasNext) {
+          list.add(extractor(reader.document(iter.next)))
+        }
+        list.iterator()
+      }
+    })
   }
 
-  def numDocs() = {
+  // Used in PySpark... need to return results as a HashMap since a Lucene's Document can't be serialized
+  def docs2map(rdd: JavaRDD[Integer], path: String): JavaRDD[HashMap[String, String]] = docs(rdd, path, doc => {
+    val map = new HashMap[String, String]()
+    for (field <- doc.getFields.asScala) {
+      map.put(field.name(), field.stringValue())
+    }
+    map
+  });
+
+}
+
+/**
+  * Load document IDs from a Lucene index
+  */
+class IndexLoader(sc: JavaSparkContext, path: String) {
+
+  /**
+    * Default Hadoop Configuration
+    */
+  val config = new Configuration()
+
+  /**
+    * Lucene IndexReader
+    */
+  val reader = DirectoryReader.open(new HdfsReadOnlyDirectory(config, new Path(path)))
+
+  /**
+    * Get the document IDs
+    *
+    * @return an RDD of document IDs
+    */
+  def docids(): JavaRDD[Integer] = {
+    docids(numDocs() - 1)
+  }
+
+  /**
+    * Get the document IDs up to a certain num
+    *
+    * @param num the limit of IDs
+    * @return an RDD of document IDs
+    */
+  def docids(num: Integer): JavaRDD[Integer] = {
+    sc.parallelize(IntStream.rangeClosed(0, num).boxed().collect(Collectors.toList()))
+  }
+
+  /**
+    * Get the number of documents in the index.
+    *
+    * @return the number of documents in the index
+    */
+  def numDocs(): Integer = {
     reader.numDocs()
   }
 
-  def docidsN(n: Int): RDD[Int] = {
-    val arr = (0 to n - 1).toArray
-    sc.parallelize(arr)
-  }
 }
