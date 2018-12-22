@@ -16,7 +16,7 @@ import io.anserini.spark._
 
 val indexPath = "../Anserini/lucene-index.core18.pos+docvectors+rawdocs/"
 val docids = new IndexLoader(sc, indexPath).docids
-val docs = docids.getDocs(indexPath, doc => doc.getField("raw").stringValue())
+val docs = docids.docs(indexPath, doc => doc.getField("raw").stringValue())
 ```
 
 The val `docs` has type:
@@ -41,16 +41,13 @@ from pyspark.mllib.common import _java2py
 INDEX_PATH = "/tuna1/indexes/lucene-index.core17.pos+docvectors+rawdocs/"
 
 # The JavaIndexLoader instance
-index_loader = sc._jvm.io.anserini.spark.JavaIndexLoader(sc._jsc, INDEX_PATH)
+index_loader = sc._jvm.io.anserini.spark.IndexLoader(sc._jsc, INDEX_PATH)
 
 # Get the document IDs as an RDD
-docids = index_loader.docIds()
-
-# Get an instance of our Lucene RDD class
-lucene = sc._jvm.io.anserini.spark.JavaLuceneRDD(docids)
+docids = index_loader.docids()
 
 # Get the JavaRDD of Lucene Document as a Map (Document can't be serialized)
-docs = lucene.getDocs(INDEX_PATH)
+docs = lucene.docs2map(INDEX_PATH)
 
 # Convert to a Python RDD
 docs = _java2py(sc, docs)

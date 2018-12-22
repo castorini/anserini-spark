@@ -1,30 +1,29 @@
 package io.anserini
 
-import io.anserini.hadoop.HdfsReadOnlyDirectory
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.Path
 import org.apache.lucene.document.Document
-import org.apache.lucene.index.DirectoryReader
+import org.apache.spark.SparkContext
+import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
 package object spark {
 
-  implicit class DocidRDD[T: ClassTag](rdd: RDD[Int]) extends java.io.Serializable {
-    def getDocs(path: String, extractor: Document => T): RDD[T] = {
-      rdd.mapPartitions(iter => {
-        val reader = DirectoryReader.open(new HdfsReadOnlyDirectory(new Configuration(), new Path(path)))
-        iter.map(doc => extractor(reader.document(doc)))
-      })
-    }
+  // Convert JavaRDD to RDD
+  implicit def java2scala[T: ClassTag](rdd: JavaRDD[T]): RDD[T] = JavaRDD.toRDD(rdd)
 
-    def getDocs(path: String): RDD[String] = {
-      rdd.mapPartitions(iter => {
-        val reader = DirectoryReader.open(new HdfsReadOnlyDirectory(new Configuration(), new Path(path)))
-        iter.map(doc => reader.document(doc).toString)
-      })
-    }
+  // Convert RDD to JavaRDD
+  implicit def scala2java[T: ClassTag](rdd: RDD[T]): JavaRDD[T] = JavaRDD.fromRDD(rdd)
+
+  // Convert JavaSparkContext to SparkContext
+  implicit def java2scala(sc: JavaSparkContext): SparkContext = JavaSparkContext.toSparkContext(sc)
+
+  // Convert SparkContext to JavaSparkContext
+  implicit def scala2java(sc: SparkContext): JavaSparkContext = JavaSparkContext.fromSparkContext(sc)
+
+  // Add docs(...) methods to JavaRDD[Integer] class.
+  implicit class DocRDD[T: ClassTag](rdd: JavaRDD[Integer]) extends java.io.Serializable {
+    def docs(path: String, extractor: Document => T): JavaRDD[T] = IndexLoader.docs(rdd, path, extractor)
   }
 
 }
