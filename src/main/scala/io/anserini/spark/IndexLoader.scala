@@ -71,7 +71,9 @@ class IndexLoader(sc: JavaSparkContext, path: String) {
     * @return an RDD of document IDs
     */
   def docids(num: Integer): JavaRDD[Integer] = {
-    sc.parallelize(IntStream.rangeClosed(0, num).boxed().collect(Collectors.toList()))
+    // sc.parallelize(IntStream.rangeClosed(0, num).boxed().collect(Collectors.toList()))
+    // This doesn't work for Java 11: Static methods in interface require -target:jvm-1.8
+    sc.parallelize(0 to num toList).map(i => i : java.lang.Integer).toJavaRDD()
   }
 
   /**
