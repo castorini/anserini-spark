@@ -1,4 +1,4 @@
-# Anserini-Spark
+# Anserini-Spark Integration
 
 Exploratory integration between Spark and Anserini: provides the ability to "map" over documents in a Lucene index.
 
@@ -8,13 +8,15 @@ Build the repo:
 $ mvn clean package
 ```
 
+## Scala Spark
+
 A demo mapping over the Core18 index of the Washington Post collection:
 
 ```
 $ spark-shell --jars target/anserini-spark-0.0.1-SNAPSHOT-fatjar.jar
 import io.anserini.spark._
 
-val indexPath = "../Anserini/lucene-index.core18.pos+docvectors+rawdocs/"
+val indexPath = "../anserini/lucene-index.core18.pos+docvectors+rawdocs/"
 val docids = new IndexLoader(sc, indexPath).docids
 val docs = docids.docs(indexPath, doc => doc.getField("raw").stringValue())
 ```
@@ -27,7 +29,7 @@ docs: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[1]
 
 It's an RDD... so you can now do whatever you want with it.
 
-# PySpark
+## PySpark
 
 PySpark interfaces with the JVM via the Py4J project, which plays much nicer with Java than Scala. Thus, the Scala classes used above have been re-written in (roughly) equivelant Java code.
 
@@ -38,7 +40,7 @@ $ pyspark --jars target/anserini-spark-0.0.1-SNAPSHOT-fatjar.jar
 from pyspark.mllib.common import _java2py
 
 # The path of the Lucene index
-INDEX_PATH = "/tuna1/indexes/lucene-index.core17.pos+docvectors+rawdocs/"
+INDEX_PATH = "../anserini/lucene-index.core18.pos+docvectors+rawdocs/"
 
 # The JavaIndexLoader instance
 index_loader = sc._jvm.io.anserini.spark.IndexLoader(sc._jsc, INDEX_PATH)
