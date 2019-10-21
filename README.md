@@ -1,6 +1,8 @@
 # Anserini-Spark Integration
 
 Exploratory integration between Spark and Anserini: provides the ability to "map" over documents in a Lucene index.
+This package works with all the versions of the dependencies referenced in [`pom.xml`](pom.xml); in particular, the important ones are Spark (2.11.12), Scala (2.4.4), and Anserini (0.6.0).
+Note that Spark still requires Java 8.
 
 Build the repo:
 
@@ -10,24 +12,43 @@ $ mvn clean package
 
 ## Scala Spark
 
-A demo mapping over the Core18 index of the Washington Post collection:
+Here's a demo mapping manipulating the Robust04 collection.
+Fire up Spark shell (adjust memory as appropriate):
 
+```bash
+$ spark-shell --jars target/anserini-spark-0.0.1-SNAPSHOT-fatjar.jar --driver-memory 128G
 ```
-$ spark-shell --jars target/anserini-spark-0.0.1-SNAPSHOT-fatjar.jar
+
+Try the following:
+
+```scala
 import io.anserini.spark._
 
-val indexPath = "../anserini/lucene-index.core18.pos+docvectors+rawdocs/"
+val indexPath = "../anserini/lucene-index.robust04.pos+docvectors+rawdocs/"
 val docids = new IndexLoader(sc, indexPath).docids
-val docs = docids.docs(indexPath, doc => doc.getField("raw").stringValue())
+val docs = docids.docs(indexPath, doc =>
+    (doc.getField("id").stringValue(), doc.getField("raw").stringValue()))
 ```
 
-The val `docs` has type:
+The val `docs` has type `JavaRDD`.
+To convert to an `RDD`:
 
-```
-docs: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[1]
+```scala
+val rdd = org.apache.spark.api.java.JavaRDD.toRDD(docs)
 ```
 
-It's an RDD... so you can now do whatever you want with it.
+It's now an RDD... so you can now do whatever you want with it.
+For example:
+
+```scala
+rdd.filter(t => t._2.contains("Albert Einstein")).count()
+// There are 65.
+
+val samples = rdd.filter(t => t._2.contains("Albert Einstein"))
+  .map(t => Tuple2(t._1, t._2)).collect()
+```
+
+The extra `map` is to deal with weird Java to Scala conversion issues.
 
 ## PySpark
 
