@@ -1,7 +1,7 @@
 # Anserini-Spark Integration
 
 Exploratory integration between Spark and Anserini: provides the ability to "map" over documents in a Lucene index.
-This package works with all the versions of the dependencies referenced in [`pom.xml`](pom.xml); in particular, the important ones are Spark (2.11.12), Scala (2.4.4), and Anserini (0.6.0).
+This package works with all the versions of the dependencies referenced in [`pom.xml`](pom.xml); in particular, the important ones are Spark (2.4.4), Scala (2.11.12), and Anserini (0.6.0).
 Note that Spark still requires Java 8.
 
 Build the repo:
@@ -12,8 +12,8 @@ $ mvn clean package
 
 ## Scala Spark
 
-Here's a demo mapping manipulating the Robust04 collection.
-Fire up Spark shell (adjust memory as appropriate):
+Here's a demo manipulating the Robust04 collection.
+First, fire up Spark shell (adjust memory as appropriate):
 
 ```bash
 $ spark-shell --jars target/anserini-spark-0.0.1-SNAPSHOT-fatjar.jar --driver-memory 128G
@@ -37,7 +37,7 @@ To convert to an `RDD`:
 val rdd = org.apache.spark.api.java.JavaRDD.toRDD(docs)
 ```
 
-It's now an RDD... so you can now do whatever you want with it.
+It's now an RDD... so you now have the full power of Spark.
 For example:
 
 ```scala
@@ -59,6 +59,8 @@ First:
 ```bash
 $ pyspark --jars target/anserini-spark-0.0.1-SNAPSHOT-fatjar.jar --driver-memory 128G
 ```
+
+The equivalent script to above:
 
 ```python
 # Import Java -> Python converter
