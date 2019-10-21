@@ -21,9 +21,4 @@ package object spark {
   // Convert SparkContext to JavaSparkContext
   implicit def scala2java(sc: SparkContext): JavaSparkContext = JavaSparkContext.fromSparkContext(sc)
 
-  // Add docs(...) methods to JavaRDD[Integer] class.
-  implicit class DocRDD[T: ClassTag](rdd: JavaRDD[Integer]) extends java.io.Serializable {
-    def docs(path: String, extractor: Document => T): JavaRDD[T] = IndexLoader.docs(rdd, path, extractor)
-  }
-
 }

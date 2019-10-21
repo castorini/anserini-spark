@@ -23,32 +23,30 @@ Try the following:
 
 ```scala
 import io.anserini.spark._
+import org.apache.spark.rdd.RDD
+import java.util.HashMap
 
 val indexPath = "../anserini/lucene-index.robust04.pos+docvectors+rawdocs/"
 val docids = new IndexLoader(sc, indexPath).docids
-val docs = docids.docs(indexPath, doc =>
-    (doc.getField("id").stringValue(), doc.getField("raw").stringValue()))
 ```
 
-The value `docs` has type `JavaRDD`.
-To convert to an `RDD`:
-
-```scala
-val rdd = org.apache.spark.api.java.JavaRDD.toRDD(docs)
-```
-
-It's now an RDD... so you now have the full power of Spark.
+The value `docids` has type `DocidRDD`, so you now have the full power of Spark.
 For example:
 
 ```scala
-rdd.filter(t => t._2.contains("Albert Einstein")).count()
-// There are 65.
+// Project the columns.
+val docs1 = docids.docs(doc => (doc.getField("id").stringValue(), doc.getField("raw").stringValue()))
+val r1 = docs1.filter(t => (t._2.contains("Albert Einstein"))).collect()
 
-val samples = rdd.filter(t => t._2.contains("Albert Einstein"))
-  .map(t => Tuple2(t._1, t._2)).collect()
+// Grab entire document as a HashMap.
+val docs2 = docids.docs()
+// docs2 has type org.apache.spark.api.java.JavaRDD[java.util.HashMap[String,String]]
+
+val docs2 : RDD[HashMap[String,String]]  = docids.docs()
+// Invoke implicit conversion to Scala RDD.
+
+val r2 = docs2.filter(t => (t.get("raw").contains("Albert Einstein"))).collect()
 ```
-
-The extra `map` is to deal with weird Java to Scala conversion issues.
 
 ## PySpark
 
@@ -66,18 +64,12 @@ The equivalent script to above:
 # Import Java -> Python converter
 from pyspark.mllib.common import _java2py
 
-# The path of the Lucene index
 INDEX_PATH = "../anserini/lucene-index.robust04.pos+docvectors+rawdocs/"
-
-# The JavaIndexLoader instance
 index_loader = spark._jvm.io.anserini.spark.IndexLoader(spark._jsc, INDEX_PATH)
-
-# Get the document IDs as an RDD
 docids = index_loader.docids()
 
-# Get the JavaRDD of Lucene Document as a Map (Document can't be serialized),
-# the run through convertor.
-docs = _java2py(spark.sparkContext, index_loader.docs2map(docids, INDEX_PATH))
+# Convert to Python.
+docs = _java2py(spark.sparkContext, docids.docs())
 ```
 
 After the above, `docs` is now an RDD in Python.
