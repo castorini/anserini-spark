@@ -57,7 +57,7 @@ Here's the equivalent demo in PySpark.
 First:
 
 ```bash
-pyspark --jars target/anserini-spark-0.0.1-SNAPSHOT-fatjar.jar --driver-memory 128G
+$ pyspark --jars target/anserini-spark-0.0.1-SNAPSHOT-fatjar.jar --driver-memory 128G
 ```
 
 ```python
