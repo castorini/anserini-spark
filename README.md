@@ -64,18 +64,12 @@ The equivalent script to above:
 # Import Java -> Python converter
 from pyspark.mllib.common import _java2py
 
-# The path of the Lucene index
 INDEX_PATH = "../anserini/lucene-index.robust04.pos+docvectors+rawdocs/"
-
-# The JavaIndexLoader instance
 index_loader = spark._jvm.io.anserini.spark.IndexLoader(spark._jsc, INDEX_PATH)
-
-# Get the document IDs as an RDD
 docids = index_loader.docids()
 
-# Get the JavaRDD of Lucene Document as a Map (Document can't be serialized),
-# the run through convertor.
-docs = _java2py(spark.sparkContext, index_loader.docs2map(docids, INDEX_PATH))
+# Convert to Python.
+docs = _java2py(spark.sparkContext, docids.docs())
 ```
 
 After the above, `docs` is now an RDD in Python.
