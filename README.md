@@ -30,7 +30,7 @@ val docs = docids.docs(indexPath, doc =>
     (doc.getField("id").stringValue(), doc.getField("raw").stringValue()))
 ```
 
-The val `docs` has type `JavaRDD`.
+The value `docs` has type `JavaRDD`.
 To convert to an `RDD`:
 
 ```scala
@@ -52,28 +52,37 @@ The extra `map` is to deal with weird Java to Scala conversion issues.
 
 ## PySpark
 
-PySpark interfaces with the JVM via the Py4J project, which plays much nicer with Java than Scala. Thus, the Scala classes used above have been re-written in (roughly) equivelant Java code.
+PySpark interfaces with the JVM via the Py4J project, which plays much nicer with Java than Scala.
+Here's the equivalent demo in PySpark.
+First:
 
+```bash
+pyspark --jars target/anserini-spark-0.0.1-SNAPSHOT-fatjar.jar --driver-memory 128G
 ```
-$ pyspark --jars target/anserini-spark-0.0.1-SNAPSHOT-fatjar.jar
 
+```python
 # Import Java -> Python converter
 from pyspark.mllib.common import _java2py
 
 # The path of the Lucene index
-INDEX_PATH = "../anserini/lucene-index.core18.pos+docvectors+rawdocs/"
+INDEX_PATH = "../anserini/lucene-index.robust04.pos+docvectors+rawdocs/"
 
 # The JavaIndexLoader instance
-index_loader = sc._jvm.io.anserini.spark.IndexLoader(sc._jsc, INDEX_PATH)
+index_loader = spark._jvm.io.anserini.spark.IndexLoader(spark._jsc, INDEX_PATH)
 
 # Get the document IDs as an RDD
 docids = index_loader.docids()
 
-# Get the JavaRDD of Lucene Document as a Map (Document can't be serialized)
-docs = lucene.docs2map(INDEX_PATH)
-
-# Convert to a Python RDD
-docs = _java2py(sc, docs)
+# Get the JavaRDD of Lucene Document as a Map (Document can't be serialized),
+# the run through convertor.
+docs = _java2py(spark.sparkContext, index_loader.docs2map(docids, INDEX_PATH))
 ```
 
-`docs` is a `<class 'pyspark.rdd.RDD'>`... we can do whatever we want with it now too.
+After the above, `docs` is now an RDD in Python.
+So we can do stuff like the following:
+
+```python
+sample = docs.take(10)
+
+matches = docs.filter(lambda d: 'Albert Einstein' in d['raw']).collect()
+```
