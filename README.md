@@ -1,8 +1,8 @@
 # Anserini-Spark Integration
 
 Exploratory integration between Spark and Anserini: provides the ability to "map" over documents in a Lucene index.
-This package works with all the versions of the dependencies referenced in [`pom.xml`](pom.xml); in particular, the important ones are Spark (2.4.4), Scala (2.11.12), and Anserini (0.6.0).
-Note that Spark still requires Java 8.
+This package works with all the versions of the dependencies referenced in [`pom.xml`](pom.xml); in particular, the important ones are Spark (3.1.1), Scala (2.12.0), and Anserini (0.6.0).
+Note that Spark still requires Java 8+.
 
 Build the repo:
 
