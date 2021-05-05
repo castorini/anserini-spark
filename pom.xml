@@ -272,7 +272,7 @@
     <dependency>
       <groupId>io.anserini</groupId>
       <artifactId>anserini</artifactId>
-      <version>0.6.0</version>
+      <version>0.12.0</version>
     </dependency>
   </dependencies>
 
