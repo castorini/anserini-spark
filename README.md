@@ -29,7 +29,7 @@ import java.util.HashMap
 val indexPath = "../anserini/lucene-index.robust04.pos+docvectors+rawdocs/"
 val docids = new IndexLoader(sc, indexPath).docids
 ```
-You can replace the above `indexPath` variable with any valid index that you have built, for example MS MARCO passage. typically, you can locate the index under the `anserini/indexes/` directory once you build it.
+You can replace the above `indexPath` variable with any valid index that you have built, for example MS MARCO passage. Typically, you can locate the index under the `anserini/indexes/` directory once you build it.
 
 The value `docids` has type `DocidRDD`, so you now have the full power of Spark.
 For example:
