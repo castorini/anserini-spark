@@ -69,7 +69,7 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.scala-tools</groupId>
+        <groupId>net.alchim31.maven</groupId>
         <artifactId>scala-maven-plugin</artifactId>
         <version>4.5.1</version>
         <executions>
