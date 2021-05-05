@@ -49,7 +49,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <scala.version>2.12.0</scala.version>
     <hbase.version>1.2.6</hbase.version>
-    <hadoop.version>2.6.5</hadoop.version>
+    <hadoop.version>3.2.0</hadoop.version>
     <spark.version>3.1.1</spark.version>
   </properties>
 
@@ -246,27 +246,27 @@
     </dependency>
     <dependency>
       <groupId>org.scalatest</groupId>
-      <artifactId>scalatest_2.11</artifactId>
+      <artifactId>scalatest_2.12</artifactId>
       <version>3.0.4</version>
     </dependency>
     <dependency>
       <groupId>org.rogach</groupId>
-      <artifactId>scallop_2.11</artifactId>
+      <artifactId>scallop_2.12</artifactId>
       <version>3.1.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-core_2.11</artifactId>
+      <artifactId>spark-core_2.12</artifactId>
       <version>${spark.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-sql_2.11</artifactId>
+      <artifactId>spark-sql_2.12</artifactId>
       <version>${spark.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-streaming_2.11</artifactId>
+      <artifactId>spark-streaming_2.12</artifactId>
       <version>${spark.version}</version>
     </dependency>
     <dependency>
