@@ -15,7 +15,7 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
 
-public abstract class HdfsReadOnlyDirectory extends Directory {
+public class HdfsReadOnlyDirectory extends Directory {
   private final FileSystem fs;
   private final Path directory;
   private final int ioFileBufferSize;
