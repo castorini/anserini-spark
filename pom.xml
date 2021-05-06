@@ -95,19 +95,26 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.2.1</version>
         <executions>
           <execution>
+            <!-- default is to bind to package phase: we override and not create fatjar unless explicitly
+                 specified on command line - this speeds up the build greatly -->
             <phase>package</phase>
             <goals>
               <goal>shade</goal>
             </goals>
             <configuration>
-              <finalName>${project.artifactId}-${project.version}-fatjar</finalName>
-              <createDependencyReducedPom>false</createDependencyReducedPom>
-              <!-- This is an Mac OSX issue because the default filesystem is case-insensitive,
-                   so multiple versions of files (w/ different cases) clash when Hadoop tries
-                   to unpack the jar. -->
+              <!-- This fixes the issue "An SPI class of type org.apache.lucene.codecs.Codec with name ... does not exist."
+                   cf. https://stackoverflow.com/questions/38361533/an-spi-class-of-type-org-apache-lucene-codecs-codec-with-name-lucene54-does-no/38382096 -->
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/services/org.apache.lucene.codecs.Codec</resource>
+                  <resource>META-INF/services/org.apache.lucene.codecs.PostingsFormat</resource>
+                </transformer>
+              </transformers>
+              <!-- This fixes the issue "Invalid signature file digest for Manifest main attributes"
+                   cf. http://zhentao-li.blogspot.com/2012/06/maven-shade-plugin-invalid-signature.html -->
               <filters>
                 <filter>
                   <artifact>*:*</artifact>
@@ -115,16 +122,16 @@
                     <exclude>META-INF/*.SF</exclude>
                     <exclude>META-INF/*.DSA</exclude>
                     <exclude>META-INF/*.RSA</exclude>
-                    <exclude>META-INF/LICENSE*</exclude>
-                    <exclude>license/*</exclude>
                   </excludes>
                 </filter>
               </filters>
+              <!-- this will create both a normal thin jar and also a fatjar -->
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>fatjar</shadedClassifierName>
             </configuration>
           </execution>
         </executions>
       </plugin>
-
       <plugin>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>
@@ -139,7 +146,7 @@
        <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>3.0.1</version>
+        <version>3.1.0</version>
         <executions>
           <execution>
             <id>attach-sources</id>
@@ -152,7 +159,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
         <executions>
           <execution>
             <id>attach-javadocs</id>
@@ -184,7 +191,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.12</version>
+      <version>4.13.1</version>
       <scope>test</scope>
     </dependency>
 
