@@ -4,11 +4,14 @@ Exploratory integration between Spark and Anserini: provides the ability to "map
 This package works with all the versions of the dependencies referenced in [`pom.xml`](pom.xml); in particular, the important ones are Spark (3.1.1), Scala (2.12.0), and Anserini (0.12.0).
 Note that Spark still requires Java 11+.
 
+**Setup Note:** While cloning this project, make sure to clone it in the same repository where you cloned anserini. Also, before building this project, make sure to build anserini first.
+
 Build the repo:
 
 ```
 $ mvn clean package
 ```
+**Note:** If you encounter build issues during `compile` with `maven-gpg-plugin:1.6:sign` saying `gpg: no default secret key: No secret key` followed by `gpg: signing failed: No secret key`, try to run `which gpg` followed by `gpg --list-secret`
 
 ## Scala Spark
 
