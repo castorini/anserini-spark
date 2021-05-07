@@ -2,7 +2,7 @@ package io.anserini.hadoop;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.*
+import java.util.*;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
