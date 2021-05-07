@@ -2,6 +2,7 @@ package io.anserini.hadoop;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.*
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -85,8 +86,7 @@ public class HdfsReadOnlyDirectory extends Directory {
   }
   
   @Override
-  public Set<String> getPendingDeletions()
-                                throws IOException {
+  public Set<String> getPendingDeletions() throws IOException {
    // nothing
   }
 
