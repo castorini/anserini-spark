@@ -83,6 +83,12 @@ public class HdfsReadOnlyDirectory extends Directory {
   public void close() throws IOException {
     // do not close the file system
   }
+  
+  @Override
+  public Set<String> getPendingDeletions()
+                                throws IOException {
+   // nothing
+  }
 
   @Override
   public String toString() {
