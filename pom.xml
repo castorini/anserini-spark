@@ -53,8 +53,8 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <scala.version>2.12.10</scala.version>
     <hbase.version>1.2.6</hbase.version>
-    <hadoop.version>2.7.0</hadoop.version>
-    <spark.version>3.1.1</spark.version>
+    <hadoop.version>2.7.4</hadoop.version>
+    <spark.version>3.0.1</spark.version>
     <lucene.version>8.3.0</lucene.version>
   </properties>
 
@@ -87,20 +87,21 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
+        <version>3.8.0</version>
         <configuration>
           <source>11</source>
           <target>11</target>
           <testSource>11</testSource>
           <testTarget>11</testTarget>
           <showDeprecation>true</showDeprecation>
-          <compilerArgument>-Xlint:unchecked</compilerArgument>
+          <compilerArgument>-Xlint:unchecked,deprecation</compilerArgument>
         </configuration>
       </plugin>
+        
       <plugin>
         <groupId>net.alchim31.maven</groupId>
         <artifactId>scala-maven-plugin</artifactId>
-        <version>4.5.1</version>
+        <version>4.2.0</version>
         <executions>
           <execution>
             <phase>process-resources</phase>
@@ -119,29 +120,36 @@
         </executions>
         <configuration>
           <scalaVersion>${scala.version}</scalaVersion>
+          <checkMultipleScalaVersions>true</checkMultipleScalaVersions>
+          <failOnMultipleScalaVersions>true</failOnMultipleScalaVersions>
+          <sendJavaToScalac>true</sendJavaToScalac>
+          <args>
+            <arg>-target:jvm-1.8</arg>
+            <arg>-g:vars</arg>
+            <arg>-deprecation</arg>
+            <arg>-dependencyfile</arg>
+            <arg>${project.build.directory}/.scala_dependencies</arg>
+          </args>
         </configuration>
       </plugin>
+        
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.2.4</version>
+        <version>3.2.1</version>
         <executions>
           <execution>
-            <!-- default is to bind to package phase: we override and not create fatjar unless explicitly
-                 specified on command line - this speeds up the build greatly -->
             <phase>package</phase>
             <goals>
               <goal>shade</goal>
             </goals>
             <configuration>
-              <!-- This fixes the issue "An SPI class of type org.apache.lucene.codecs.Codec with name ... does not exist."
-                   cf. https://stackoverflow.com/questions/38361533/an-spi-class-of-type-org-apache-lucene-codecs-codec-with-name-lucene54-does-no/38382096 -->
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/services/org.apache.lucene.codecs.Codec</resource>
-                  <resource>META-INF/services/org.apache.lucene.codecs.PostingsFormat</resource>
                 </transformer>
               </transformers>
+
               <!-- This fixes the issue "Invalid signature file digest for Manifest main attributes"
                    cf. http://zhentao-li.blogspot.com/2012/06/maven-shade-plugin-invalid-signature.html -->
               <filters>
@@ -154,13 +162,22 @@
                   </excludes>
                 </filter>
               </filters>
-              <!-- this will create both a normal thin jar and also a fatjar -->
+              <!-- This will create both a normal thin jar and also a fatjar. -->
               <shadedArtifactAttached>true</shadedArtifactAttached>
               <shadedClassifierName>fatjar</shadedClassifierName>
+              <artifactSet>
+                <excludes>
+                  <exclude>org.apache.hadoop:hadoop-core</exclude>
+                  <exclude>org.apache.hadoop:hadoop-common</exclude>
+                  <exclude>org.apache.hadoop:hadoop-mapreduce-client-core</exclude>
+                  <exclude>org.apache.spark:*</exclude>
+                </excludes>
+              </artifactSet>
             </configuration>
           </execution>
         </executions>
       </plugin>
+
       <plugin>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>
@@ -188,7 +205,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.2.0</version>
+        <version>3.1.1</version>
         <executions>
           <execution>
             <id>attach-javadocs</id>
@@ -287,7 +304,7 @@
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_2.12</artifactId>
-      <version>3.0.4</version>
+      <version>3.0.8</version>
     </dependency>
     <dependency>
       <groupId>org.rogach</groupId>
