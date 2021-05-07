@@ -1,4 +1,5 @@
 package io.anserini.hadoop;
+package com.java2novice.collections;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -87,7 +88,8 @@ public class HdfsReadOnlyDirectory extends Directory {
   
   @Override
   public Set<String> getPendingDeletions() throws IOException {
-   // nothing
+    Set<String> myEmptySet = Collections.<String>emptySet();
+    return myEmptySet;
   }
 
   @Override
