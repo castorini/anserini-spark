@@ -42,6 +42,10 @@
       <id>maven</id>
       <url>http://repo.maven.apache.org/maven2/</url>
     </repository>
+      <repository>
+      <id>test</id>
+      <url>https://mvnrepository.com/artifact/net.alchim31.maven</url>
+    </repository>
   </repositories>
     
   <properties>
@@ -219,7 +223,11 @@
       <version>4.13.1</version>
       <scope>test</scope>
     </dependency>
-
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-core</artifactId>
+      <version>${lucene.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-client</artifactId>
