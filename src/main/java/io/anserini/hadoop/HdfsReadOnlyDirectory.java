@@ -87,7 +87,7 @@ public class HdfsReadOnlyDirectory extends Directory {
   
   @Override
   public Set<String> getPendingDeletions() throws IOException {
-    Set<String> myEmptySet = Collection.<String>emptySet();
+    Set<String> myEmptySet = Collections.<String>emptySet();
     return myEmptySet;
   }
 
