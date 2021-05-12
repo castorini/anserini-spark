@@ -1,14 +1,17 @@
 # Anserini-Spark Integration
 
 Exploratory integration between Spark and Anserini: provides the ability to "map" over documents in a Lucene index.
-This package works with all the versions of the dependencies referenced in [`pom.xml`](pom.xml); in particular, the important ones are Spark (2.4.4), Scala (2.11.12), and Anserini (0.6.0).
-Note that Spark still requires Java 8.
+This package works with all the versions of the dependencies referenced in [`pom.xml`](pom.xml); in particular, the important ones are Spark (3.1.1), Scala (2.12.0), and Anserini (0.12.0).
+Note that Spark still requires Java 11+.
+
+**Setup Note:** While cloning this project, make sure to clone it in the same repository where you cloned anserini. Also, before building this project, make sure to build anserini first.
 
 Build the repo:
 
 ```
 $ mvn clean package
 ```
+**Note:** If you encounter build issues during `compile` with `maven-gpg-plugin:1.6:sign` saying `gpg: no default secret key: No secret key` followed by `gpg: signing failed: No secret key`, try to run `which gpg` followed by `gpg --list-secret`
 
 ## Scala Spark
 
@@ -29,6 +32,7 @@ import java.util.HashMap
 val indexPath = "../anserini/lucene-index.robust04.pos+docvectors+rawdocs/"
 val docids = new IndexLoader(sc, indexPath).docids
 ```
+You can replace the above `indexPath` variable with any valid index that you have built, for example MS MARCO passage. Typically, you can locate the index under the `anserini/indexes/` directory once you build it.
 
 The value `docids` has type `DocidRDD`, so you now have the full power of Spark.
 For example:

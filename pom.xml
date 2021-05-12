@@ -42,36 +42,66 @@
       <id>maven</id>
       <url>http://repo.maven.apache.org/maven2/</url>
     </repository>
+      <repository>
+      <id>test</id>
+      <url>https://mvnrepository.com/artifact/net.alchim31.maven</url>
+    </repository>
   </repositories>
-
+    
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <scala.version>2.11.12</scala.version>
+    <scala.version>2.12.10</scala.version>
     <hbase.version>1.2.6</hbase.version>
-    <hadoop.version>2.6.5</hadoop.version>
-    <spark.version>2.4.4</spark.version>
+    <hadoop.version>2.7.0</hadoop.version>
+    <spark.version>3.1.1</spark.version>
+    <lucene.version>8.3.0</lucene.version>
   </properties>
 
   <build>
-    <plugins>
+    <plugins> 
+       <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <version>3.0.0-M3</version>
+            <executions>
+                <execution>
+                    <id>default-cli</id>
+                    <phase>validate</phase>
+                    <goals>
+                        <goal>enforce</goal>
+                    </goals>
+                    <configuration>
+                        <rules>
+                            <requireMavenVersion>
+                                <version>3.3.9</version>
+                            </requireMavenVersion>
+                            <requireJavaVersion>
+                                <version>[11,)</version>
+                            </requireJavaVersion>
+                        </rules>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
+        <version>3.8.0</version>
         <configuration>
-          <source>8</source>
-          <target>8</target>
-          <testSource>8</testSource>
-          <testTarget>8</testTarget>
+          <source>11</source>
+          <target>11</target>
+          <testSource>11</testSource>
+          <testTarget>11</testTarget>
           <showDeprecation>true</showDeprecation>
-          <compilerArgument>-Xlint:unchecked</compilerArgument>
+          <compilerArgument>-Xlint:unchecked,deprecation</compilerArgument>
         </configuration>
       </plugin>
+        
       <plugin>
-        <groupId>org.scala-tools</groupId>
-        <artifactId>maven-scala-plugin</artifactId>
-        <version>2.15.2</version>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <version>4.2.0</version>
         <executions>
           <execution>
             <phase>process-resources</phase>
@@ -90,12 +120,23 @@
         </executions>
         <configuration>
           <scalaVersion>${scala.version}</scalaVersion>
+          <checkMultipleScalaVersions>true</checkMultipleScalaVersions>
+          <failOnMultipleScalaVersions>true</failOnMultipleScalaVersions>
+          <sendJavaToScalac>true</sendJavaToScalac>
+          <args>
+            <arg>-target:jvm-1.8</arg>
+            <arg>-g:vars</arg>
+            <arg>-deprecation</arg>
+            <arg>-dependencyfile</arg>
+            <arg>${project.build.directory}/.scala_dependencies</arg>
+          </args>
         </configuration>
       </plugin>
+        
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.2.1</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -103,11 +144,15 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-              <finalName>${project.artifactId}-${project.version}-fatjar</finalName>
-              <createDependencyReducedPom>false</createDependencyReducedPom>
-              <!-- This is an Mac OSX issue because the default filesystem is case-insensitive,
-                   so multiple versions of files (w/ different cases) clash when Hadoop tries
-                   to unpack the jar. -->
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/services/org.apache.lucene.codecs.Codec</resource>
+                    <resource>META-INF/services/org.apache.lucene.codecs.PostingsFormat</resource>
+                </transformer>
+              </transformers>
+
+              <!-- This fixes the issue "Invalid signature file digest for Manifest main attributes"
+                   cf. http://zhentao-li.blogspot.com/2012/06/maven-shade-plugin-invalid-signature.html -->
               <filters>
                 <filter>
                   <artifact>*:*</artifact>
@@ -115,11 +160,20 @@
                     <exclude>META-INF/*.SF</exclude>
                     <exclude>META-INF/*.DSA</exclude>
                     <exclude>META-INF/*.RSA</exclude>
-                    <exclude>META-INF/LICENSE*</exclude>
-                    <exclude>license/*</exclude>
                   </excludes>
                 </filter>
               </filters>
+              <!-- This will create both a normal thin jar and also a fatjar. -->
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>fatjar</shadedClassifierName>
+              <artifactSet>
+                <excludes>
+                  <exclude>org.apache.hadoop:hadoop-core</exclude>
+                  <exclude>org.apache.hadoop:hadoop-common</exclude>
+                  <exclude>org.apache.hadoop:hadoop-mapreduce-client-core</exclude>
+                  <exclude>org.apache.spark:*</exclude>
+                </excludes>
+              </artifactSet>
             </configuration>
           </execution>
         </executions>
@@ -139,7 +193,7 @@
        <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>3.0.1</version>
+        <version>3.2.1</version>
         <executions>
           <execution>
             <id>attach-sources</id>
@@ -152,7 +206,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>3.1.1</version>
         <executions>
           <execution>
             <id>attach-javadocs</id>
@@ -163,19 +217,21 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-gpg-plugin</artifactId>
-        <version>1.6</version>
-        <executions>
-          <execution>
-            <id>sign-artifacts</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>sign</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+              <artifactId>maven-gpg-plugin</artifactId>
+              <version>1.6</version>
+              <executions>
+                <execution>
+                  <id>sign-artifacts</id>
+                  <phase>verify</phase>
+                  <goals>
+                    <goal>sign</goal>
+                  </goals>
+                </execution>
+              </executions>
+              <configuration>
+                <useAgent>true</useAgent>
+              </configuration>
+            </plugin>
 
     </plugins>
   </build>
@@ -184,10 +240,14 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.12</version>
+      <version>4.13.1</version>
       <scope>test</scope>
     </dependency>
-
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-core</artifactId>
+      <version>${lucene.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-client</artifactId>
@@ -237,7 +297,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>23.6-jre</version>
+      <version>29.0-jre</version>
     </dependency>
     <dependency>
       <groupId>org.scala-lang</groupId>
@@ -246,33 +306,33 @@
     </dependency>
     <dependency>
       <groupId>org.scalatest</groupId>
-      <artifactId>scalatest_2.11</artifactId>
-      <version>3.0.4</version>
+      <artifactId>scalatest_2.12</artifactId>
+      <version>3.0.8</version>
     </dependency>
     <dependency>
       <groupId>org.rogach</groupId>
-      <artifactId>scallop_2.11</artifactId>
+      <artifactId>scallop_2.12</artifactId>
       <version>3.1.1</version>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-core_2.11</artifactId>
+      <artifactId>spark-core_2.12</artifactId>
       <version>${spark.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-sql_2.11</artifactId>
+      <artifactId>spark-sql_2.12</artifactId>
       <version>${spark.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-streaming_2.11</artifactId>
+      <artifactId>spark-streaming_2.12</artifactId>
       <version>${spark.version}</version>
     </dependency>
     <dependency>
       <groupId>io.anserini</groupId>
       <artifactId>anserini</artifactId>
-      <version>0.6.0</version>
+      <version>0.12.0</version>
     </dependency>
   </dependencies>
 
