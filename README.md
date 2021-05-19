@@ -84,3 +84,22 @@ sample = docs.take(10)
 
 matches = docs.filter(lambda d: 'Albert Einstein' in d['raw']).collect()
 ```
+If you would like to convert `docs` from `pyspark.rdd.RDD` to `pyspark.sql.dataframe.DataFrame` to use the operations related to dataframes, then you can do this as follows:
+
+```python
+from pyspark.sql import SQLContext
+
+# After docs variable has the PySpark RDD
+my_schema = sqlContext.createDataFrame(docs)
+my_schema.createOrReplaceTempView("docs")
+```
+
+`my_schema` will have the same structure as `docs` with columns as `(id, raw)`
+
+If you want to filter the `raw` column based on a keyword as shown above, the same can be achieved with a dataframe as well:
+
+```python
+
+# Can be used for any keyword
+results = my_schema.filter(my_schema.raw.contains('America'))
+```
